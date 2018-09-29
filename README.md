@@ -86,5 +86,4 @@ ajax请求。
 * 如果在上线后首屏调用速度较慢，这样得情况得话，可以鞭挞后端人员，开启服务器得gzip压缩功能将js压缩一下，压缩后大小基本只有原来得三分之一，这个很实用
 
 
-
-## 上线地址：[https://xupanqiang.github.io/resume/](https://xupanqiang.github.io/resume/)
+[上线地址：https://xupanqiang.github.io/resume/](https://xupanqiang.github.io/resume/)
