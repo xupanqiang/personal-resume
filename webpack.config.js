@@ -82,7 +82,7 @@ module.exports = {
     output: {
         filename: pro ? '[name].[hash].js' : 'bundle.js',//'[name].[hash].js' : '[name].js'
         path: path.join(__dirname, 'dist'),
-        publicPath: pro ? 'https://xupanqiang.github.io/resume/dist/' : `http://${url}:${dev_port}/dist/`
+        publicPath: pro ? './' : `http://${url}:${dev_port}/dist/`
     },
     devtool: false,
     module: {
