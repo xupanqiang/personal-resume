@@ -87,3 +87,20 @@ ajax请求。
 
 ```
 上线地址：[https://xupanqiang.github.io/resume/](https://xupanqiang.github.io/resume/)
+
+
+
+
+
+
+
+
+
+
+## 配置项详细说明
+
+
+
+- [webpack4的开发环境配置](https://github.com/xupanqiang/personal-resume/blob/master/DEV.md)
+- [webpack4的生产环境配置](https://github.com/xupanqiang/personal-resume/blob/master/PROD.md)
+- [webpack4的新增变化](https://github.com/xupanqiang/personal-resume/blob/master/XZ.md)
