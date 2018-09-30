@@ -68,8 +68,7 @@ ajax请求。
 
 
 
-# 注意
-  如果在build或者start的时候出现node-sass之类的报错，可以使用 npm rebuild node-sass来处理下，再build或start，有不了解的同学可以issues告诉我。
+
 
 # 使用方法：
     安装模块：npm install

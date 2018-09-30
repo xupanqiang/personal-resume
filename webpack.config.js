@@ -14,9 +14,9 @@ var url = "localhost"
 let plg = [];
 if (pro) {
     plg = [
-        new HtmlWebpackPlugin({
-            template: path.join(__dirname, '/src/index.html') // Load a custom template
-        }),
+        // new HtmlWebpackPlugin({
+        //     template: path.join(__dirname, '/src/index.html') // Load a custom template
+        // }),
         new MiniCssExtractPlugin({
             filename: "[name].[hash].css",
             chunkFilename: "[id].css"
@@ -80,7 +80,7 @@ module.exports = {
         }
     },
     output: {
-        filename: pro ? '[name].[hash].js' : 'bundle.js',//'[name].[hash].js' : '[name].js'
+        filename: 'bundle.js',//pro ? '[name].[hash].js' : '[name].js'
         path: path.join(__dirname, 'dist'),
         publicPath: pro ? './' : `http://${url}:${dev_port}/dist/`
     },
