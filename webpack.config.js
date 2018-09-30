@@ -1,26 +1,61 @@
 const path = require('path');
 const webpack = require("webpack");
-var pro = process.env.NODE_ENV == "production" ? true : false
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const pro = process.env.NODE_ENV == "production" ? true : false
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+// 打包css
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+// 压缩css
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+// 压缩js
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// 图片
+const ImageminPlugin = require('imagemin-webpack-plugin').default
+// gzip 压缩
+const CompressionPlugin = require('compression-webpack-plugin');
 
 //开发环境端口号
-var dev_port = "8010"
+const dev_port = "8010"
 //更改本地测试环境的地址，可以写localhost，或者写你本地的ip方便手机测试
-var url = "localhost"
+const url = "localhost"
+
+const entry = pro ? {
+    bundle: './src/index.js',
+    babelPolyfill: 'babel-polyfill',
+    cjs: ['./src/js/globalJs.js', './src/js/msgReducer.js', './src/js/requestUtil.js']
+} : [
+    './src/index.js',
+];
 
 
 //不同环境加载不同的插件
 let plg = [];
 if (pro) {
     plg = [
-        // new HtmlWebpackPlugin({
-        //     template: path.join(__dirname, '/src/index.html') // Load a custom template
-        // }),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, '/src/index.html') // Load a custom template
+        }),
+        // 打包css
         new MiniCssExtractPlugin({
             filename: "[name].[hash].css",
             chunkFilename: "[id].css"
-        })
+        }),
+        // 压缩css
+        new OptimizeCssAssetsPlugin({
+            assetNameRegExp: /\.optimize\.css$/g,
+            cssProcessor: require('cssnano'),
+            cssProcessorOptions: { safe: true, discardComments: { removeAll: true } },
+            canPrint: true
+        }),
+        // 压缩图片
+        new ImageminPlugin({ test: /\.(jpe?g|png|gif|svg)$/i }),
+        // gzip 压缩
+        // new CompressionPlugin({
+        //     asset: "[path].gz[query]",
+        //     algorithm: "gzip",
+        //     test: /\.js$|\.css$|\.html$/,
+        //     threshold: 10240,
+        //     minRatio: 0.8
+        // })
     ]
 
 
@@ -36,12 +71,11 @@ if (pro) {
 
 
 module.exports = {
-    entry: {
-        index: ['babel-polyfill', './src/index.js']
-    },
+    entry: entry,
     optimization: {
         splitChunks: {
-            chunks: "initial",         // 必须三选一： "initial" | "all"(默认就是all) | "async"
+            // 打包 node_modules里的代码
+            chunks: "all",         // 必须三选一： "initial" | "all"(默认就是all) | "async"
             minSize: 0,                // 最小尺寸，默认0
             minChunks: 1,              // 最小 chunk ，默认1
             maxAsyncRequests: 1,       // 最大异步请求数， 默认1
@@ -50,19 +84,48 @@ module.exports = {
             },              // 名称，此选项课接收 function
             cacheGroups: {                 // 这里开始设置缓存的 chunks
                 priority: "0",                // 缓存组优先级 false | object |
-                vendor: {                   // key 为entry中定义的 入口名称
-                    chunks: "initial",        // 必须三选一： "initial" | "all" | "async"(默认就是异步)
-                    test: /react|lodash/,     // 正则规则验证，如果符合就提取 chunk
-                    name: "vendor",           // 要缓存的 分隔出来的 chunk 名称
+                cjs: {                   // key 为entry中定义的 入口名称
+                    chunks: "all",        // 必须三选一： "initial" | "all" | "async"(默认就是异步)
+                    // test: /react|lodash/,     // 正则规则验证，如果符合就提取 chunk
+                    name: 'cjs',           // 要缓存的 分隔出来的 chunk 名称
                     minSize: 0,
-                    minChunks: 1,
+                    minChunks: 10,
                     enforce: true,
-                    maxAsyncRequests: 1,       // 最大异步请求数， 默认1
-                    maxInitialRequests: 1,    // 最大初始化请求书，默认1
+                    maxAsyncRequests: 10,       // 最大异步请求数， 默认1
+                    maxInitialRequests: 10,    // 最大初始化请求书，默认1
                     reuseExistingChunk: true   // 可设置是否重用该chunk（查看源码没有发现默认值）
+                },
+                babelPolyfill:{
+                    name: "babelPolyfill",
+                    chunks: "initial",
+                    minChunks: 2
                 }
             }
-        }
+        },
+        // runtimeChunk: true,               // 打包 runtime 代码
+        // 默认optimization.minimize是true，所以js可以自动帮你压缩,但是自定义minimizer后，webpack默认配置会取消掉。
+        minimizer: [
+            new OptimizeCssAssetsPlugin({}), // 压缩 css,使用minimizer会自动取消webpack的默认配置，所以记得用UglifyJsPlugin
+            new UglifyJsPlugin({
+                // 压缩 js
+                uglifyOptions: {
+                    ecma: 6,
+                    cache: true,
+                    parallel: true,
+                    output: {
+                        // 最紧凑的输出
+                        beautify: false,
+                        // 去掉注释
+                        comments: false
+                    },
+                    compress: {
+                        warnings: false,
+                        // 删除conslos.*
+                        drop_console: true,
+                    },
+                }
+            })
+        ]
     },
     plugins:plg,
     resolve: {
@@ -80,7 +143,7 @@ module.exports = {
         }
     },
     output: {
-        filename: 'bundle.js',//pro ? '[name].[hash].js' : '[name].js'
+        filename: pro ? '[name].js' : 'bundle.js',//pro ? '[name].[hash].js' : '[name].js'
         path: path.join(__dirname, 'dist'),
         publicPath: pro ? './' : `http://${url}:${dev_port}/dist/`
     },
